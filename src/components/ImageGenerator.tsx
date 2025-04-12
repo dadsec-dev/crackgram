@@ -63,20 +63,21 @@ export function ImageGenerator() {
     try {
       setProgress(10);
       
-      // Add timeout handling
+      // Shorter timeout to match Vercel limits
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+      const timeoutId = setTimeout(() => controller.abort(), 55000); // 55 seconds timeout (just under Vercel's limit)
       
       setProgress(20);
       console.log("Sending API request with data:", formData);
       
-      // Add loading message updates for better UX during long operations
+      // Improve loading messages to set better expectations
       const loadingMessages = [
         "Initializing AI model...",
         "Interpreting your prompt...",
         "Creating your image...",
-        "Almost there, adding final details...",
-        "This might take up to 1-2 minutes with complex prompts..."
+        "This may take up to a minute...",
+        "If timeout occurs, try with a simpler prompt or fewer steps",
+        "Consider using 512x512 resolution for faster generation"
       ];
       
       let messageIndex = 0;
@@ -85,7 +86,7 @@ export function ImageGenerator() {
           setError(loadingMessages[messageIndex]);
           messageIndex++;
         }
-      }, 8000);
+      }, 7000);
       
       // Adaptive progress for longer operations
       const progressInterval = setInterval(() => {
@@ -201,7 +202,21 @@ export function ImageGenerator() {
       );
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
-        setError("The image generation is taking longer than expected. This could be due to high server load. Please try again or use a simpler prompt.");
+        setError(
+          "The request timed out. Vercel's free tier has a 60-second limit for serverless functions. Try the following:" +
+          "\n1. Use a simpler prompt" + 
+          "\n2. Reduce the number of inference steps (20-30 is often sufficient)" +
+          "\n3. Use 512x512 resolution" +
+          "\n4. Try again (server load varies)"
+        );
+      } else if (err instanceof Error && err.message.includes('504')) {
+        setError(
+          "Gateway Timeout (504). The server took too long to respond. Try the following:" +
+          "\n1. Use a simpler prompt" + 
+          "\n2. Reduce the number of inference steps (20-30 is often sufficient)" +
+          "\n3. Use 512x512 resolution" +
+          "\n4. Try again (server load varies)"
+        );
       } else {
         setError(err instanceof Error ? err.message : "An error occurred during image generation");
       }
@@ -360,7 +375,9 @@ export function ImageGenerator() {
           {/* Display error if there is one */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
-              {error}
+              {error.split('\n').map((line, idx) => (
+                <p key={idx} className={idx > 0 ? "mt-1" : ""}>{line}</p>
+              ))}
             </div>
           )}
 

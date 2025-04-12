@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import Replicate from "replicate";
 
-export const maxDuration = 300; // Set maximum duration to 300 seconds (5 minutes)
+export const maxDuration = 60; // Set maximum duration to 60 seconds (Vercel hobby plan limit)
 export const dynamic = 'force-dynamic'; // Make sure this is always a dynamic route
 
 const replicate = new Replicate({
