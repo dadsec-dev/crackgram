@@ -3,11 +3,13 @@
 import Script from "next/script";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+import { Suspense } from "react";
 
 // Use environment variable for Google Analytics Measurement ID
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "";
 
-export function Analytics() {
+// Inner component that uses useSearchParams
+function AnalyticsInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -26,6 +28,11 @@ export function Analytics() {
     }
   }, [pathname, searchParams]);
 
+  return null;
+}
+
+// Main Analytics component with Suspense boundary
+export function Analytics() {
   // Only render the Scripts if a Measurement ID is available
   if (!GA_MEASUREMENT_ID) return null;
 
@@ -50,6 +57,9 @@ export function Analytics() {
           `,
         }}
       />
+      <Suspense fallback={null}>
+        <AnalyticsInner />
+      </Suspense>
     </>
   );
 }

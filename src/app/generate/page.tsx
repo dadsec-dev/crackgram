@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ImageGenerator } from "@/components/ImageGenerator";
 import { ImageGallery } from "@/components/ImageGallery";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getSavedImages, clearSavedImages } from "@/lib/utils";
 
-export default function GeneratePage() {
+// Inner component that uses useSearchParams
+function GeneratePageContent() {
   const searchParams = useSearchParams();
   const tabFromUrl = searchParams.get('tab');
   const initialTab = tabFromUrl === 'gallery' ? 'gallery' : 'generate';
@@ -36,6 +37,25 @@ export default function GeneratePage() {
   }, []);
 
   return (
+    <Tabs defaultValue={initialTab} className="w-full" onValueChange={setActiveTab}>
+      <TabsList className="w-full md:w-fit grid grid-cols-2 md:flex md:space-x-2 mb-6">
+        <TabsTrigger value="generate">Create Image</TabsTrigger>
+        <TabsTrigger value="gallery">My Collection</TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value="generate" className="w-full">
+        <ImageGenerator />
+      </TabsContent>
+      
+      <TabsContent value="gallery" className="w-full">
+        <ImageGallery />
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+export default function GeneratePage() {
+  return (
     <main className="flex min-h-screen flex-col items-center p-4 md:p-8 bg-gray-50">
       <header className="w-full max-w-5xl mb-8">
         <div className="flex justify-between items-center">
@@ -55,20 +75,9 @@ export default function GeneratePage() {
       </header>
 
       <div className="w-full max-w-5xl">
-        <Tabs defaultValue={initialTab} className="w-full" onValueChange={setActiveTab}>
-          <TabsList className="w-full md:w-fit grid grid-cols-2 md:flex md:space-x-2 mb-6">
-            <TabsTrigger value="generate">Create Image</TabsTrigger>
-            <TabsTrigger value="gallery">My Collection</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="generate" className="w-full">
-            <ImageGenerator />
-          </TabsContent>
-          
-          <TabsContent value="gallery" className="w-full">
-            <ImageGallery />
-          </TabsContent>
-        </Tabs>
+        <Suspense fallback={<div>Loading...</div>}>
+          <GeneratePageContent />
+        </Suspense>
       </div>
     </main>
   );

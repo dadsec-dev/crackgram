@@ -2,6 +2,12 @@ import "./globals.css";
 import { Analytics } from "@/components/Analytics";
 import Script from "next/script";
 
+// Separate viewport export as recommended by Next.js
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata = {
   title: "Crackgram | AI Image Generation Platform",
   description: "Transform your ideas into stunning visuals with Crackgram. Create professional-quality AI-generated images using Google Imagen and Ideogram models. Free to try, easy to use.",
@@ -43,10 +49,6 @@ export const metadata = {
       'max-image-preview': 'large',
       'max-snippet': -1,
     },
-  },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
   },
   verification: {
     google: "google-site-verification-code", // Replace with actual verification code when available

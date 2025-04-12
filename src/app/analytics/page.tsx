@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 
-export default function AnalyticsDashboard() {
+// Analytics dashboard content
+function AnalyticsDashboardContent() {
   const [gaLink, setGaLink] = useState("https://analytics.google.com/");
   
   return (
@@ -91,5 +92,14 @@ export default function AnalyticsDashboard() {
         </div>
       </div>
     </main>
+  );
+}
+
+// Export with Suspense boundary
+export default function AnalyticsDashboard() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AnalyticsDashboardContent />
+    </Suspense>
   );
 } 

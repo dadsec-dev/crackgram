@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { clearSavedImages, getSavedImages } from "@/lib/utils";
 import Image from "next/image";
 import { ImageGenerator } from "@/components/ImageGenerator";
@@ -9,7 +9,8 @@ import { ImageGallery } from "@/components/ImageGallery";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 
-export default function LandingPage() {
+// The main content component
+function LandingPageContent() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-gray-100">
       {/* Header */}
@@ -287,5 +288,14 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+// Export default with Suspense boundary
+export default function LandingPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LandingPageContent />
+    </Suspense>
   );
 }
