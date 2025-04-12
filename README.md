@@ -2,6 +2,23 @@
 
 Crackgram is a professional-grade AI image generation platform that transforms text prompts into stunning visuals with a few clicks. Designed for creators, marketers, and businesses, Crackgram leverages the latest AI models from Google and Ideogram to produce high-quality images for any project.
 
+## Sample Images
+
+Here are some examples of images that can be generated using Crackgram:
+
+<div align="center">
+  <table>
+    <tr>
+      <td><img src="public/img1.png" alt="Sample AI generated image 1" width="250"/></td>
+      <td><img src="public/img2.png" alt="Sample AI generated image 2" width="250"/></td>
+      <td><img src="public/img33.png" alt="Sample AI generated image 3" width="250"/></td>
+    </tr>
+ -->
+  </table>
+</div>
+
+**Note:** Images shown are examples. The platform can generate a wide variety of styles based on your prompts.
+
 ## Features
 
 - 🎨 Create professional images from detailed text prompts
