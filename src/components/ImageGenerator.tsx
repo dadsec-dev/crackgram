@@ -1,10 +1,29 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { GeneratedImageType, saveImageToStorage } from "@/lib/utils";
 import { GeneratedImage } from "@/components/GeneratedImage";
 import { trackEvent } from "./Analytics";
+
+// Define template prompts
+const TEMPLATE_PROMPTS = [
+  {
+    title: "AI Running Shoe",
+    prompt: "An illustration of a gold running shoe with the text \"Run AI with an API\" written on the shoe. The shoe is placed on a pink background. The text is white and bold. The overall image has a modern and techy vibe, with elements of speed.",
+    negativePrompt: "blurry, distorted text, low quality, unrealistic proportions",
+  },
+  {
+    title: "Futuristic City",
+    prompt: "A breathtaking futuristic cityscape at sunset. Towering skyscrapers with holographic displays, flying vehicles between buildings, and lush vertical gardens. The sky is a gradient of orange and purple with a large sun setting on the horizon.",
+    negativePrompt: "dull colors, apocalyptic, destroyed, gloomy, black and white",
+  },
+  {
+    title: "Fantasy Character",
+    prompt: "A portrait of a mystical forest elf with glowing green eyes, wearing intricate silver armor adorned with emeralds and leaves. Long flowing hair with small flowers braided in. Ethereal light filtering through ancient trees in the background.",
+    negativePrompt: "modern clothing, urban setting, distorted features, cartoon style",
+  }
+];
 
 // Define the form data structure
 interface FormData {
@@ -37,6 +56,20 @@ export function ImageGenerator() {
   const [progress, setProgress] = useState(0);
   const [generatedImage, setGeneratedImage] = useState<GeneratedImageType | null>(null);
   const [debugInfo, setDebugInfo] = useState<{requestModel: string, responseModel: string} | null>(null);
+  const [showTemplateMenu, setShowTemplateMenu] = useState(false);
+
+  // Set initial default prompt after component mount
+  useEffect(() => {
+    // Only initialize if prompt is empty
+    if (!formData.prompt) {
+      const defaultTemplate = TEMPLATE_PROMPTS[0];
+      setFormData(prev => ({
+        ...prev,
+        prompt: defaultTemplate.prompt,
+        negativePrompt: defaultTemplate.negativePrompt
+      }));
+    }
+  }, []);
 
   // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -47,6 +80,16 @@ export function ImageGenerator() {
         ? parseFloat(value) 
         : value,
     }));
+  };
+
+  // Handle template selection
+  const handleTemplateSelect = (template: typeof TEMPLATE_PROMPTS[0]) => {
+    setFormData(prev => ({
+      ...prev,
+      prompt: template.prompt,
+      negativePrompt: template.negativePrompt || prev.negativePrompt
+    }));
+    setShowTemplateMenu(false);
   };
 
   // Handle form submission
@@ -232,9 +275,42 @@ export function ImageGenerator() {
       <div className="w-full">
         <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-md p-6 space-y-6">
           <div className="space-y-2">
-            <label htmlFor="prompt" className="block text-sm font-medium text-gray-700">
-              Prompt <span className="text-red-500">*</span>
-            </label>
+            <div className="flex justify-between items-center">
+              <label htmlFor="prompt" className="block text-sm font-medium text-gray-700">
+                Prompt <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <button 
+                  type="button"
+                  onClick={() => setShowTemplateMenu(!showTemplateMenu)}
+                  className="text-xs px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 flex items-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                  Templates
+                </button>
+                {showTemplateMenu && (
+                  <div className="absolute right-0 mt-1 w-64 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                    <div className="py-1">
+                      <div className="px-3 py-2 text-xs font-medium text-gray-700 border-b">
+                        Select a template
+                      </div>
+                      {TEMPLATE_PROMPTS.map((template, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => handleTemplateSelect(template)}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          {template.title}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
             <textarea
               id="prompt"
               name="prompt"
@@ -298,6 +374,9 @@ export function ImageGenerator() {
                   step="1"
                   className="w-full text-gray-900"
                 />
+                <div className="text-xs text-gray-500">
+                  <span className="text-yellow-600">Tip:</span> Lower values (20-30) generate faster
+                </div>
               </div>
 
               <div className="space-y-1">
@@ -332,6 +411,9 @@ export function ImageGenerator() {
                   <option value={768}>768px</option>
                   <option value={1024}>1024px</option>
                 </select>
+                <div className="text-xs text-gray-500">
+                  <span className="text-yellow-600">Tip:</span> 512px generates faster
+                </div>
               </div>
 
               <div className="space-y-1">
@@ -349,6 +431,9 @@ export function ImageGenerator() {
                   <option value={768}>768px</option>
                   <option value={1024}>1024px</option>
                 </select>
+                <div className="text-xs text-gray-500">
+                  <span className="text-yellow-600">Tip:</span> 512px generates faster
+                </div>
               </div>
 
               <div className="space-y-1 md:col-span-2">
