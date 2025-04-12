@@ -38,7 +38,7 @@ export default function AnalyticsDashboard() {
           <ol className="list-decimal pl-5 space-y-2 text-gray-700">
             <li>Create a Google Analytics account at <a href="https://analytics.google.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">analytics.google.com</a></li>
             <li>Set up a new property for your website</li>
-            <li>Get your Measurement ID (starts with "G-")</li>
+            <li>Get your Measurement ID (starts with &quot;G-&quot;)</li>
             <li>Replace the placeholder ID in the Analytics.tsx component</li>
             <li>Deploy your application with the updated Measurement ID</li>
             <li>Return to this page and update the link below to your actual Google Analytics dashboard URL</li>
