@@ -53,38 +53,68 @@ export function ImageGenerator() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    if (!formData.prompt.trim()) {
-      setError("Please enter a prompt to generate an image");
-      return;
-    }
+    if (isGenerating) return;
+    
+    setIsGenerating(true);
+    setError(null);
+    setGeneratedImage(null);
+    setProgress(0);
 
     try {
-      setIsGenerating(true);
-      setError(null);
       setProgress(10);
       
-      // Call the Replicate API
+      // Add timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+      
+      setProgress(20);
+      console.log("Sending API request with data:", formData);
+      
+      // Add loading message updates for better UX during long operations
+      const loadingMessages = [
+        "Initializing AI model...",
+        "Interpreting your prompt...",
+        "Creating your image...",
+        "Almost there, adding final details...",
+        "This might take up to 1-2 minutes with complex prompts..."
+      ];
+      
+      let messageIndex = 0;
+      const messageInterval = setInterval(() => {
+        if (messageIndex < loadingMessages.length) {
+          setError(loadingMessages[messageIndex]);
+          messageIndex++;
+        }
+      }, 8000);
+      
+      // Adaptive progress for longer operations
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          // Only increase progress up to 90% while waiting
+          if (prev < 90) {
+            return prev + (90 - prev) / 10;
+          }
+          return prev;
+        });
+      }, 2000);
+      
       const response = await fetch("/api/replicate/generate-image", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          prompt: formData.prompt,
-          negative_prompt: formData.negativePrompt,
-          num_inference_steps: formData.steps,
-          guidance_scale: formData.guidanceScale,
-          width: formData.width,
-          height: formData.height,
-          scheduler: formData.scheduler,
-          model: formData.model,
-        }),
+        body: JSON.stringify(formData),
+        signal: controller.signal
       });
 
-      setProgress(30);
-
+      clearTimeout(timeoutId);
+      clearInterval(messageInterval);
+      clearInterval(progressInterval);
+      setError(null);
+      
       if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error: ${response.status}`);
       }
 
       const data = await response.json();
@@ -170,7 +200,11 @@ export function ImageGenerator() {
         formData.steps
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred during image generation");
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setError("The image generation is taking longer than expected. This could be due to high server load. Please try again or use a simpler prompt.");
+      } else {
+        setError(err instanceof Error ? err.message : "An error occurred during image generation");
+      }
       console.error("Error generating image:", err);
     } finally {
       setIsGenerating(false);
